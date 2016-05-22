@@ -1,5 +1,11 @@
 /*
-  High Low game
+  High Low Game
+
+  Using the up and down arrows choose whether the next random number
+  is going to be higher or lower then the previous number
+
+  https://github.com/rwisner/highlow
+  rwisner@gmail.com
 */
 
 #include <Arduboy.h>
@@ -10,117 +16,146 @@ byte x;
 byte y;
 long oldRand;
 long newRand;
-int points;
+int currScore;
+int highScore;
 
-void setup() {
-
-  arduboy.begin();
-
-  arduboy.setFrameRate(10);
-
-  /*Serial.begin(9600);*/
-
-  x=0;
-  y=0;
-  points = 0;
-  randomSeed(999);
-  oldRand = random(1,101);
-  newRand = random(1,101);
-
+void drawTable() {
   arduboy.clear();
+  arduboy.drawRect(0,0,128,64,1);
+  arduboy.drawLine(50,0,50,64,1);
+  arduboy.drawLine(100,0,100,64,1);
+  arduboy.drawLine(100,32,128,32,1);
+  arduboy.display();
+}
 
-  x=0;
+void drawQuestion() {
+  arduboy.setTextSize(2);
+  x = 16; y = 27;
   arduboy.setCursor(x, y);
   arduboy.print(oldRand);
+}
 
-  x=40;
+void drawAnswer() {
+  arduboy.setTextSize(2);
+  x = 66; y = 27;
   arduboy.setCursor(x, y);
-  arduboy.print(points);
+  arduboy.print(newRand);
+}
 
+void drawHighOrLow() {
+  arduboy.setTextSize(1);
+  x = 65; y = 20;
+  arduboy.setCursor(x, y);
+  arduboy.print("High");
+  x = 65; y = 30;
+  arduboy.setCursor(x, y);
+  arduboy.print("or");
+  x = 65; y = 40;
+  arduboy.setCursor(x, y);
+  arduboy.print("Low?");
+}
+
+void drawScores() {
+  arduboy.setTextSize(1);
+  x = 112; y = 14;
+  arduboy.setCursor(x, y);
+  arduboy.print(currScore);
+  x = 112; y = 46;
+  arduboy.setCursor(x, y);
+  arduboy.print(highScore);
+}
+
+void downButton() {
+  delay(100);
+  arduboy.clear();
+  drawTable();
+  drawQuestion();
+  drawAnswer();
+  if (newRand < oldRand) {
+    youWin();
+  } else {
+    youLose();
+  }
+  drawScores();
   arduboy.display();
+  delay(2000);
+  oldRand = newRand;
+  newRand = random(1,101);
+  arduboy.clear();
+  drawTable();
+  drawQuestion();
+  drawHighOrLow();
+  drawScores();
+  arduboy.display();
+}
 
+void upButton() {
+  delay(100);
+  arduboy.clear();
+  drawTable();
+  drawQuestion();
+  drawAnswer();
+  if (newRand > oldRand) {
+    youWin();
+  } else {
+    youLose();
+  }
+  drawScores();
+  arduboy.display();
+  delay(2000);
+  oldRand = newRand;
+  newRand = random(1,101);
+  arduboy.clear();
+  drawTable();
+  drawQuestion();
+  drawHighOrLow();
+  drawScores();
+  arduboy.display();
+}
+
+void youWin() {
+  arduboy.setTextSize(1);
+  x = 56; y = 53;
+  arduboy.setCursor(x, y);
+  arduboy.print("YOU WIN");
+  currScore += 1;
+  if (currScore > highScore) {
+    highScore = currScore;
+  }
+}
+
+void youLose() {
+  arduboy.setTextSize(1);
+  x = 52; y = 53;
+  arduboy.setCursor(x, y);
+  arduboy.print("YOU LOSE");
+  currScore = 0;
+}
+
+void setup() {
+  arduboy.begin();
+  arduboy.setFrameRate(10);
+  currScore = 0;
+  highScore = 0;
+  arduboy.initRandomSeed();
+  oldRand = random(1,101);
+  newRand = random(1,101);
+  arduboy.clear();
+  drawTable();
+  drawQuestion();
+  drawHighOrLow();
+  drawScores();
+  arduboy.display();
 }
 
 void loop() {
-
   if (!(arduboy.nextFrame())) {
     return;
   }
-
-  if(arduboy.pressed(UP_BUTTON)) {
-  delay(100);
-  x=20;
-  arduboy.setCursor(x, y);
-  arduboy.print(newRand);
-  if(newRand>oldRand) {
-    points++;
-  } else {
-    points=0;
-    x=60;
-    arduboy.setCursor(x,y);
-    arduboy.print("YOU LOSE");
-    arduboy.display();
+  if (arduboy.pressed(UP_BUTTON)) {
+    upButton();
   }
-
-  x=40;
-  arduboy.setCursor(x, y);
-  arduboy.print(points);
-
-  arduboy.display();
-  delay(2000);
-
-  oldRand=newRand;
-  newRand = random(1,101);
-
-  arduboy.clear();
-
-  x=0;
-  arduboy.setCursor(x, y);
-  arduboy.print(oldRand);
-
-  x=40;
-  arduboy.setCursor(x, y);
-  arduboy.print(points);
-
-  arduboy.display();
+  if (arduboy.pressed(DOWN_BUTTON)) {
+    downButton();
   }
-
-  if(arduboy.pressed(DOWN_BUTTON)) {
-    delay(100);
-    x=20;
-    arduboy.setCursor(x, y);
-    arduboy.print(newRand);
-    if(newRand<oldRand) {
-      points++;
-    } else {
-      points=0;
-      x=60;
-      arduboy.setCursor(x,y);
-      arduboy.print("YOU LOSE");
-      arduboy.display();
-    }
-
-    x=40;
-    arduboy.setCursor(x, y);
-    arduboy.print(points);
-
-    arduboy.display();
-    delay(2000);
-
-    oldRand=newRand;
-    newRand = random(1,101);
-
-    arduboy.clear();
-
-    x=0;
-    arduboy.setCursor(x, y);
-    arduboy.print(oldRand);
-
-    x=40;
-    arduboy.setCursor(x, y);
-    arduboy.print(points);
-
-    arduboy.display();
-  }
-
 }
